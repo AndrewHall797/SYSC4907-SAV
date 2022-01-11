@@ -59,8 +59,7 @@ class CruiseControl:
 
     # Converts the PID controller value in the range of [0, 1) that the throttle and brake can have
     def pidToCarValues(self, inp):
-        out = max(1 - math.exp(-2 * inp), 0.0)
-        return out
+        return max(1 - math.exp(-2 * inp), 0.0)
 
     def publish_results(self):
 
