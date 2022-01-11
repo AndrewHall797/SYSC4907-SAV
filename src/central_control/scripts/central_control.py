@@ -41,6 +41,7 @@ class CentralControl:
 
     def handle_breaking_data(self, braking_data):
         print("Obtained braking data")
+        self.car_controls.brake = braking_data.data
 
     def handle_throttling_data(self, throttling_data: Float64):
         print("Obtained throttling data")

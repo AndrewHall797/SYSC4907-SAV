@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import math
+import time
 
 import rospy
 from mapping_navigation.msg import PathData
@@ -11,7 +13,23 @@ class CruiseControl:
         self.steeringPub = rospy.Publisher("steering", Float64, queue_size = 10)
         self.brakingPub = rospy.Publisher("braking", Float64, queue_size = 10)
         self.throttlePub = rospy.Publisher("throttling", Float64, queue_size = 10)
-        self.speed: float = 0.0
+
+        self.currentSpeed: float = 0.0
+        self.targetSpeed = 5.0
+
+        self.integral = 0
+        self.speedDifference = 0
+
+        # Used in integral windup mitigation. See publish_results()
+        self.potentialKiValue = 0.75
+        self.clampValue = 0.995  # Must be in range of [0, 1)
+
+        self.kP = 1.0
+        self.kI = self.potentialKiValue
+        self.kD = 0.05
+
+        self.lastTime = time.time()
+        self.translationExpCoefficient = -2.0
 
     def listener(self):
         rospy.init_node("cruise_control", anonymous=True)
@@ -37,19 +55,59 @@ class CruiseControl:
 
     def handle_speed_data(self, speed: Float64):
         rospy.loginfo("Handling the speed data")
-        self.speed = speed.data
+        self.currentSpeed = speed.data
+
+    # Converts the PID controller value in the range of [0, 1) that the throttle and brake can have
+    def pidToCarValues(self, inp):
+        out = max(1 - math.exp(-2 * inp), 0.0)
+        return out
 
     def publish_results(self):
-        #Just so it does not mess with the data
-        #self.steeringPub.publish(1)
-        self.brakingPub.publish(1)
 
-        if self.speed < 5:
-            # If throttle is too low then car will not go above a certain speed (at least if road is
-            # uphill). This value might have to change as a result
-            self.throttlePub.publish(0.5)
+        delta_time = time.time() - self.lastTime
+        self.lastTime += delta_time
+
+        # Find the inputs to the PID controller: value for proportional, integral and differential
+
+        self.speedDifference = self.targetSpeed - self.currentSpeed
+        proportional_input = self.speedDifference * self.kP
+
+        self.integral = (self.integral + self.speedDifference) * delta_time
+        integral_input = self.integral * self.kI
+
+        differential_input = self.kD * (self.speedDifference / delta_time)
+
+        # Compute the value for the throttle or the braking. The output of the PID controller does not correlate to a
+        # range of [0, 1] as required for the throttle or brake, hence the call to pidToCarValues
+
+        pid_controller_output = proportional_input + integral_input + differential_input
+        translated_value = 0.0
+
+        if pid_controller_output > 0.0:
+            translated_value = self.pidToCarValues(pid_controller_output)
+            self.throttlePub.publish(translated_value)
+            self.brakingPub.publish(0.0)
+            rospy.loginfo("Setting throttle: {}".format(translated_value))
         else:
-            self.throttlePub.publish(0)
+            translated_value = self.pidToCarValues(-pid_controller_output)
+            self.brakingPub.publish(translated_value)
+            self.throttlePub.publish(0.0)
+            rospy.loginfo("Setting brakes: {}".format(translated_value))
+
+        # Need to stop integral windup if car is at correct speed. The throttle or brake value is considered too large
+        # when clamping their value has an effect. Translated value is always positive
+
+        clamping_has_effect = translated_value > self.clampValue
+        same_signs = pid_controller_output > 0.0 and self.speedDifference > 0.0
+
+        rospy.loginfo("{} | {} | {} | {}".format(proportional_input, integral_input, differential_input, delta_time))
+
+        if clamping_has_effect and same_signs:
+            self.kI = 0.0
+            rospy.loginfo("Setting kI to 0")
+        else:
+            self.kI = self.potentialKiValue
+            rospy.loginfo("Setting Ki to {}".format(self.potentialKiValue))
 
 
 if __name__ == "__main__":
