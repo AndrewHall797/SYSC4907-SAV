@@ -38,8 +38,6 @@ class CruiseControl:
 
         self.kD = float(pidCoefficientsFile.readline())
 
-        self.writeCoefficient = int(pidCoefficientsFile.readline())
-
         self.lastTime = time.time()
         self.translationExpCoefficient = -2.0
 

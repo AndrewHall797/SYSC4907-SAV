@@ -18,3 +18,5 @@ catkin_ws/*.pyc
 .git
 **/airsim/
 src/cruise_control/scripts/speed_output.txt
+testing_infrastructure/RosTests/obj
+testing_infrastructure/TestResults
