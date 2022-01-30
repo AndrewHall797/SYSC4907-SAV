@@ -18,3 +18,4 @@ catkin_ws/*.pyc
 .git
 **/airsim/
 src/cruise_control/scripts/speed_output.txt
+src/cruise_control/scripts/cluster_output.txt

@@ -26,6 +26,7 @@ class CruiseControl:
 
         # Used for automated testing
         self.outputSpeedFile = open("speed_output.txt", "w")
+        self.output_cluster_file = open("cluster_output.txt", "w")
 
     def listener(self):
         rospy.init_node("cruise_control", anonymous=True)
@@ -46,9 +47,7 @@ class CruiseControl:
     def handle_lidar_data(self, data):
         num_clusters = self.cluster_detection.find_clusters(data.points)
         rospy.loginfo("Found {} clusters\n".format(num_clusters))
-        if num_clusters > 1:
-            with mss() as sct:
-                sct.shot(mon=1, output="C:/Users/BinyBrion/Pictures/test.png")
+        self.output_cluster_file.write("{}\n".format(num_clusters))
 
     def handle_path_data(self, data):
         print("Obtained path data")
