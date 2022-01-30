@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-import math
 import time
 
 from pid_controller import PIDController
 from pid_controller import ThrottleAction
+from cluster_detection import ClusterDetection
 
 import rospy
 from mapping_navigation.msg import PathData
 from sensor_msgs.msg import PointCloud
 from std_msgs.msg import Float64
-import os
+from mss import mss
 
 class CruiseControl:
 
@@ -17,6 +17,8 @@ class CruiseControl:
         self.steeringPub = rospy.Publisher("steering", Float64, queue_size = 10)
         self.brakingPub = rospy.Publisher("braking", Float64, queue_size = 10)
         self.throttlePub = rospy.Publisher("throttling", Float64, queue_size = 10)
+
+        self.cluster_detection = ClusterDetection()
 
         self.pidController = PIDController()
         self.currentSpeed = 0.0
@@ -42,7 +44,11 @@ class CruiseControl:
          rate.sleep()
 
     def handle_lidar_data(self, data):
-        print("Obtained lidar data")
+        num_clusters = self.cluster_detection.find_clusters(data.points)
+        rospy.loginfo("Found {} clusters\n".format(num_clusters))
+        if num_clusters > 1:
+            with mss() as sct:
+                sct.shot(mon=1, output="C:/Users/BinyBrion/Pictures/test.png")
 
     def handle_path_data(self, data):
         print("Obtained path data")
