@@ -9,7 +9,7 @@ import rospy
 from mapping_navigation.msg import PathData
 from sensor_msgs.msg import PointCloud
 from std_msgs.msg import Float64
-from mss import mss
+import os
 
 class CruiseControl:
 
@@ -25,8 +25,8 @@ class CruiseControl:
         self.lastTime = time.time()
 
         # Used for automated testing
-        self.outputSpeedFile = open("speed_output.txt", "w")
-        self.output_cluster_file = open("cluster_output.txt", "w")
+        self.outputSpeedFile = open(os.path.abspath(os.path.dirname(__file__)) + "/speed_output.txt", "w")
+        self.output_cluster_file = open(os.path.abspath(os.path.dirname(__file__)) + "/cluster_output.txt", "w")
 
     def listener(self):
         rospy.init_node("cruise_control", anonymous=True)
@@ -41,13 +41,14 @@ class CruiseControl:
         # Higher the rate the smoother the constant speed is, but will take more CPU power
         rate = rospy.Rate(30)
         while not rospy.is_shutdown():
-         self.publish_results()
-         rate.sleep()
+            self.publish_results()
+            rate.sleep()
 
     def handle_lidar_data(self, data):
         num_clusters = self.cluster_detection.find_clusters(data.points)
         rospy.loginfo("Found {} clusters\n".format(num_clusters))
         self.output_cluster_file.write("{}\n".format(num_clusters))
+        self.output_cluster_file.flush()
 
     def handle_path_data(self, data):
         print("Obtained path data")
