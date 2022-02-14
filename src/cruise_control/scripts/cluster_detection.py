@@ -1,11 +1,20 @@
+import airsim
 import numpy as np
 import open3d as o3d
+import os
 
 # Detects clusters in a point cloud and finds bounding boxes of detected clusters
+import rospy
+
+
 class ClusterDetection:
     def __init__(self):
-        self.min_num_points = 25
-        self.epsilon = 0.35
+        param_file = open(os.path.abspath(os.path.dirname(__file__)) + "/cluster_values.txt")
+        self.min_num_points = int(param_file.readline())
+        self.epsilon = float(param_file.readline())
+        self.box_output_file = open(os.path.abspath(os.path.dirname(__file__)) + "/detected_boxes.txt", "w")
+        self.client = airsim.CarClient()
+        self.client.confirmConnection()
 
     def find_clusters(self, lidar_points):
         o3d_point_cloud = o3d.geometry.PointCloud()
@@ -42,6 +51,8 @@ class ClusterDetection:
         for cluster in cluster_dic.values():
             self.find_aabb(cluster, bounding_boxes)
 
+        self.write_array_to_file(bounding_boxes)
+
         return bounding_boxes
 
     def find_aabb(self, points, result):
@@ -65,10 +76,34 @@ class ClusterDetection:
             max_z = max(p[2], max_z)
 
         result.append(min_x)
-        result.append(max_x)
-
         result.append(min_y)
-        result.append(max_y)
-
         result.append(min_z)
+
+        result.append(max_x)
+        result.append(max_y)
         result.append(max_z)
+
+    def write_array_to_file(self, boxes):
+
+        car_pos = self.client.simGetGroundTruthKinematics("").position
+
+        self.box_output_file.write("{},{},{},".format(car_pos.x_val.real, car_pos.y_val.real, car_pos.z_val.real))
+
+        component_index = 0
+
+        for box in boxes:
+            if component_index == 0:
+                box += car_pos.x_val.real
+            elif component_index == 1:
+                box += car_pos.y_val.real
+            else:
+                box += car_pos.z_val.real
+
+            component_index += 1
+            if component_index % 3 == 0:
+                component_index = 0
+
+            self.box_output_file.write("{},".format(box))
+
+        self.box_output_file.write("\n")
+        self.box_output_file.flush()
