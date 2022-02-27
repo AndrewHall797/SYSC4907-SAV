@@ -1,0 +1,3 @@
+Average distance to the optimal path is 0.5983988860272642
+Median distance to the optimal path is 0.14499664306640625
+Max distance along the entire trip is 2.188432007580356
