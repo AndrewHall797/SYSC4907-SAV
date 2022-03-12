@@ -40,15 +40,15 @@ class CentralControl:
     def control(self):
         print("Control loop")
 
-    def handle_steering_data(self, steering_data):
-        print("Obtained steering data")
-        # self.car_controls.steering = steering_data.data
-
+    # Results from navigation
+    # Returns the steering angle from pure pursuit
+    # Returns the current road segment type
+    # Returns a warning of a new road segment if one is within 5 meter of the car
     def handle_navigation_data(self, navigation_data):
         print("Obtained navigation data")
         self.car_controls.steering = navigation_data.steering_angle
-        print(RoadSegmentType(navigation_data.current_segment))
-        print(RoadWarning(navigation_data.next_segment))
+        rospy.loginfo(RoadSegmentType(navigation_data.current_segment))
+        rospy.loginfo(RoadWarning(navigation_data.next_segment))
 
     def handle_breaking_data(self, braking_data):
         print("Obtained braking data")
