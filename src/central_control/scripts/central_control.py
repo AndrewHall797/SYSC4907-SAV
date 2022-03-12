@@ -43,7 +43,7 @@ class CentralControl:
     # Returns the steering angle from pure pursuit
     # Returns the current road segment type
     # Returns a warning of a new road segment if one is within 5 meter of the car
-    def handle_navigation_data(self, navigation_data):
+    def handle_navigation_data(self, navigation_data: PathData):
         print("Obtained navigation data")
         self.car_controls.steering = navigation_data.steering_angle
         rospy.loginfo(RoadSegmentType(navigation_data.current_segment))

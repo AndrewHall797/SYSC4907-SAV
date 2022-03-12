@@ -157,7 +157,7 @@ class MapModel:
     # Convert path to AirSim coords
     # TODO: include the segment type information somewhere...
     def convert_path(self, index) -> List[Tuple[float, float, RoadSegmentType]]:
-        airsim_path: List[Tuple[float, float]] = []
+        airsim_path: List[Tuple[float, float, RoadSegmentType]] = []
         sel_path = self.paths[index]
         # Empty path
         if sel_path.empty():
@@ -166,10 +166,10 @@ class MapModel:
         # Iterate through points in the path
         for con, p in sel_path.connections:
             converted_point = self.convert_point(p)
+
+            segment_type = RoadSegmentType.STRAIGHT
             if con.from_seg_id is not None:
                 segment_type = self.road_segments[con.from_seg_id].seg_type
-            else:
-                segment_type = RoadSegmentType.STRAIGHT
             airsim_path.append((converted_point[0], converted_point[1], segment_type))
 
         return airsim_path
