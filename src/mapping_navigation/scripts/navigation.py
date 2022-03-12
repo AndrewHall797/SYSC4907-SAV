@@ -20,7 +20,6 @@ class Navigation:
 
     def __init__(self, path: List[Tuple[float, float, RoadSegmentType]], look_ahead_distance: float,
                  look_forward_gain: float, wheel_base: float):
-        self.steering_pub = rospy.Publisher('steering', Float64, queue_size=10)
         self.navigation_pub = rospy.Publisher('navigation', PathData, queue_size=10)
         self.last_index = 0
         self.target_index = 0
@@ -51,8 +50,6 @@ class Navigation:
                 nav_msg.current_segment = self.path[closest_point_index].segment_type.value
                 nav_msg.next_segment = next_segment.value
 
-                steering_angle = self.get_steering_angle()
-                self.steering_pub.publish(steering_angle)
                 self.navigation_pub.publish(nav_msg)
             else:
                 rospy.loginfo('Done route')

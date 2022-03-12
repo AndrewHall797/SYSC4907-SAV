@@ -27,7 +27,6 @@ class CentralControl:
         rospy.init_node("central_control", anonymous=True)
         rospy.Subscriber("lane_info", LaneStatus, self.handle_lane_data)
         rospy.Subscriber("navigation", PathData, self.handle_navigation_data)
-        rospy.Subscriber("steering", Float64, self.handle_steering_data)
         rospy.Subscriber("braking", Float64, self.handle_breaking_data)
         rospy.Subscriber("throttling", Float64, self.handle_throttling_data)
         rospy.Subscriber("sign_detection", DetectionResults, self.handle_sign_recognition)
