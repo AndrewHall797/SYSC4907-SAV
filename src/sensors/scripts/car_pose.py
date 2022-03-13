@@ -15,7 +15,7 @@ def airpub():
 
     # connect to the AirSim simulator
     host_ip = rospy.get_param('/host_ip')
-    client = airsim.CarClient(ip=host_ip)
+    client = airsim.CarClient()
     client.confirmConnection()
 
 #    start = time.time()

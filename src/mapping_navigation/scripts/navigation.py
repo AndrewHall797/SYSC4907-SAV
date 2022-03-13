@@ -107,14 +107,14 @@ class Navigation:
 # Can use either of the path methods by uncommenting one or the other if you want to test with the old path
 if __name__ == "__main__":
 
-    # map = load_from_file(os.path.abspath(os.path.dirname(__file__)) + "/new_coords.txt")
-    # # Assuming one path for the moment unless we plan on adding multiple per map in the future
-    # created_path = map.convert_path(0)
+    map = load_from_file(os.path.abspath(os.path.dirname(__file__)) + "/new_coords.pickle")
+    # Assuming one path for the moment unless we plan on adding multiple per map in the future
+    created_path = map.convert_path(0)
 
-    created_path = []
-    old_path_format = read_points(os.path.abspath(os.path.dirname(__file__)) + "/coords.txt")
-    for old_point in old_path_format:
-        created_path.append((old_point.coordinate[0], old_point.coordinate[1], RoadSegmentType.STRAIGHT))
+    # created_path = []
+    # old_path_format = read_points(os.path.abspath(os.path.dirname(__file__)) + "/coords.txt")
+    # for old_point in old_path_format:
+    #     created_path.append((old_point.coordinate[0], old_point.coordinate[1], RoadSegmentType.STRAIGHT))
 
     navigation = Navigation(look_ahead_distance=3.0, look_forward_gain=0.1, path=created_path, wheel_base=2.2)
     navigation.listener()
