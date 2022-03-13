@@ -96,7 +96,7 @@ def hough_line_detection_segmentation(edges: np.ndarray) -> List[Tuple[float, fl
 
 
 # Get two points from a line
-def make_points(frame: np.ndarray, line: np.ndarray) -> List[List[float]]:
+def make_points(frame: np.ndarray, line: np.ndarray) -> List[float]:
     height, width, _ = frame.shape
     slope, intercept = line
     y1 = height  # bottom of the frame
@@ -124,7 +124,7 @@ def make_points(frame: np.ndarray, line: np.ndarray) -> List[List[float]]:
 
 
 # Divide the lanes into left and right segments
-def average_slope_intercept(frame: np.ndarray, line_segments: np.ndarray) -> List[float]:
+def average_slope_intercept(frame: np.ndarray, line_segments: List[Tuple[float, float, float, float]]) -> List[List[float]]:
     lane_lines = []
     if line_segments is None:
         return lane_lines
@@ -186,11 +186,11 @@ def get_road_detection(image: np.ndarray) -> (np.ndarray, int):
             if sum == most_common_detection:
                 new_image[y][x] = 255
 
-    return new_image.astype(np.uint8), most_common_detection
+    return new_image.astype(np.uint8), int(most_common_detection)
 
 
 # Detect the lines of both the lanes and the road bounds
-def lane_detect(cv_img: np.ndarray, segmented_image: np.ndarray) -> Tuple[List, List, List, int]:
+def lane_detect(cv_img: np.ndarray, segmented_image: np.ndarray) -> Tuple[List[List[float]], List[List[float]], List[List[float]], int]:
     gray_image = cv.cvtColor(cv_img, cv.COLOR_BGR2GRAY)
 
     # Gradient threshold of scene image

@@ -15,9 +15,9 @@ from lane_bound_status import LaneBoundStatus
 # Returns the coordinates of the two lines
 # Returns the current majority segment found in the segmentation image by the sum of the RGB value
 def lane_interpret(img: np.ndarray, segmented_img: np.ndarray) -> Tuple[Tuple[LaneBoundStatus, LaneBoundStatus, LaneBoundStatus],
-                                                                        Tuple[float, float], Tuple[List[float], List[float], List[float]], int]:
+                                                                        Tuple[List[float], List[float]], Tuple[List[List[float]],
+                                                                        List[List[float]], List[List[float]]], int]:
     bridge = CvBridge()
-    height = img.height
 
     if img and segmented_img:
         try:
@@ -42,7 +42,7 @@ def lane_interpret(img: np.ndarray, segmented_img: np.ndarray) -> Tuple[Tuple[La
 
         except CvBridgeError as e:
             print(e)
-            return (LaneBoundStatus.NO_BOUNDS, LaneBoundStatus.NO_BOUNDS, LaneBoundStatus.NO_BOUNDS), (100, 100), ([], [], []), 1
+            return (LaneBoundStatus.NO_BOUNDS, LaneBoundStatus.NO_BOUNDS, LaneBoundStatus.NO_BOUNDS), ([100], [100]), ([], [], []), 1
 
 
 # Returns the type of lane detection

@@ -8,7 +8,7 @@ from typing import List
 
 
 # Write points to a file, can set the total distance and the distance between the points
-def write_points(filename: str, dist: int, delta: int):
+def write_points(filename: str, dist: int, delta: float):
     client = airsim.CarClient()
     client.confirmConnection()
 
