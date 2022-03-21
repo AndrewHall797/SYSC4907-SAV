@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import math
 from typing import List, Tuple
+import os
 
 HOUGH_MIN_VOTES = 50
 HOUGH_MIN_LINE_LENGTH = 60
@@ -14,6 +15,8 @@ HOUGH_MAX_LINE_GAP_SEGMENTED = 5
 
 CANNY_MIN_THRESHOLD = 150
 CANNY_MAX_THRESHOLD = 200
+
+num_iter = 0
 
 
 # HLS thresholding on the image
@@ -191,6 +194,10 @@ def get_road_detection(image: np.ndarray) -> (np.ndarray, int):
 
 # Detect the lines of both the lanes and the road bounds
 def lane_detect(cv_img: np.ndarray, segmented_image: np.ndarray) -> Tuple[List, List, List, int]:
+
+    grad_img = np.copy(cv_img)
+    hls_img = np.copy(cv_img)
+    seg_img = np.copy(cv_img)
     gray_image = cv.cvtColor(cv_img, cv.COLOR_BGR2GRAY)
 
     # Gradient threshold of scene image
@@ -227,31 +234,45 @@ def lane_detect(cv_img: np.ndarray, segmented_image: np.ndarray) -> Tuple[List, 
     segmented_lane_lines = average_slope_intercept(cv_img, hough_segmented)
     hls_lane_lines = average_slope_intercept(cv_img, hough_hls)
 
-    # Saved for live visualization assumes two lanes
-    try:
-        masked_segmented = cv.cvtColor(masked_segmented, cv.COLOR_GRAY2RGB)
-        if hough_segmented is not None:
-            for line in hough_segmented:
-                for x1, y1, x2, y2 in line:
-                    fit = np.polyfit((x1, x2), (y1, y2), 1)
-                    slope = fit[0]
-                    if 0.1 > slope > -0.1:
-                        continue
-                    cv.line(masked_segmented, (x1, y1), (x2, y2), (255, 0, 0), 2)
-
-        if gradient_lane_lines:
-            for line in gradient_lane_lines:
-                coord1, coord2, coord3, coord4 = line
-                cv.line(masked_segmented, (coord1, coord2), (coord3, coord4), (0, 0, 255), 2)
-
-        if segmented_lane_lines:
-            for line in segmented_lane_lines:
-                coord1, coord2, coord3, coord4 = line
-                cv.line(masked_segmented, (coord1, coord2), (coord3, coord4), (0, 255, 0), 2)
-        cv.imshow("masked", masked_segmented)
-        cv.imshow("demo", cv_img)
-        cv.waitKey(1)
-    except IndexError as e:
-        print(e)
+    # global num_iter
+    # cv.imwrite(f'C:\\Users\\andre\\Projects\\SYSC4907-SAV\\src\\lane_keep_assist\\scripts\\canny_masked\\segmented{num_iter}.png',
+    #            masked_gradient)
+    # cv.imwrite(f'C:\\Users\\andre\\Projects\\SYSC4907-SAV\\src\\lane_keep_assist\\scripts\\hls_masked\\segmented{num_iter}.png',
+    #            masked_hls)
+    # num_iter = num_iter + 1
+    #
+    # # Saved for live visualization assumes two lanes
+    # try:
+    #
+    #     if hough_gradient is not None:
+    #         for line in hough_gradient:
+    #             for x1, y1, x2, y2 in line:
+    #                 fit = np.polyfit((x1, x2), (y1, y2), 1)
+    #                 slope = fit[0]
+    #                 if 0.1 > slope > -0.1:
+    #                     continue
+    #                 cv.line(grad_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+    #
+    #     # if gradient_lane_lines:
+    #     #     for line in gradient_lane_lines:
+    #     #         coord1, coord2, coord3, coord4 = line
+    #     #         cv.line(grad_img, (coord1, coord2), (coord3, coord4), (0, 0, 255), 2)
+    #     #
+    #     # if hls_lane_lines:
+    #     #     for line in hls_lane_lines:
+    #     #         coord1, coord2, coord3, coord4 = line
+    #     #         cv.line(hls_img, (coord1, coord2), (coord3, coord4), (0, 255, 0), 2)
+    #     #
+    #     # if segmented_lane_lines:
+    #     #     for line in segmented_lane_lines:
+    #     #         coord1, coord2, coord3, coord4 = line
+    #     #         cv.line(seg_img, (coord1, coord2), (coord3, coord4), (255, 0, 0), 2)
+    #
+    #     cv.imwrite(f'C:\\Users\\andre\\Projects\\SYSC4907-SAV\\src\\lane_keep_assist\\scripts\\hough\\hough{num_iter}.png', grad_img)
+    #     # cv.imwrite(f'C:\\Users\\andre\\Projects\\SYSC4907-SAV\\src\\lane_keep_assist\\scripts\\hls\\hls_img{num_iter}.png', hls_img)
+    #     # cv.imwrite(f'C:\\Users\\andre\\Projects\\SYSC4907-SAV\\src\\lane_keep_assist\\scripts\\segmented\\seg_img{num_iter}.png', seg_img)
+    #     num_iter = num_iter + 1
+    # except IndexError as e:
+    #     print(e)
 
     return gradient_lane_lines, hls_lane_lines, segmented_lane_lines, road_colour
