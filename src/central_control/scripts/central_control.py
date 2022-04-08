@@ -75,6 +75,9 @@ class StopState(Enum):
     STOPPING = 2
     RESUMING = 3
 
+ROADWARNINGSPEEDS = {RoadWarning.TURN_AHEAD: 2.5, RoadWarning.INTERSECTION_AHEAD: 2.5, RoadWarning.STRAIGHT_ROAD_AHEAD: 5}
+ROADSEGMENTSPEEDS = {RoadSegmentType.STRAIGHT: 5, RoadSegmentType.INTERSECTION: 2.5, RoadSegmentType.TURN: 2.5}
+
 
 class CentralControl:
     """Central Controller containing logic that processes all the sensor data"""
@@ -104,6 +107,10 @@ class CentralControl:
         self.lka_lanes: List[LaneLine] = []
         self.lane_status: LaneBoundStatus = LaneBoundStatus.NO_BOUNDS
         self.lane_debug: LaneStatus = None
+
+        self.target_speed_pub = rospy.Publisher('target_speed', Float64, queue_size=10)
+        self.current_road_segment = RoadSegmentType.STRAIGHT
+        self.next_road_segment = RoadWarning.SAME_AHEAD
 
         # TODO: implement system
         # Each subsystem will have their own formatted recommendation object?
@@ -145,6 +152,13 @@ class CentralControl:
 
             # Get image to draw on
             scene = self.get_scene_image()
+
+            # Check the current road segment status and define a max speed for them
+            if not self.next_road_segment == RoadWarning.SAME_AHEAD:
+                self.target_speed_pub.publish(ROADWARNINGSPEEDS[self.next_road_segment])
+            else:
+                self.target_speed_pub.publish(ROADSEGMENTSPEEDS[self.current_road_segment])
+
 
             # Iterate through the stored objects and signs (only stop signs for now)
             # to see if there are actions worth taking
@@ -301,8 +315,8 @@ class CentralControl:
     def handle_navigation_data(self, navigation_data: PathData):
         print("Obtained navigation data")
         self.car_controls.steering = navigation_data.steering_angle
-        rospy.loginfo(RoadSegmentType(navigation_data.current_segment))
-        rospy.loginfo(RoadWarning(navigation_data.next_segment))
+        self.current_road_segment = navigation_data.current_segment
+        self.next_road_segment = navigation_data.next_segment
 
     def handle_breaking_data(self, braking_data):
         pass
