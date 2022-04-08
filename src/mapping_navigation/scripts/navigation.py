@@ -2,7 +2,6 @@
 
 import rospy
 import os
-import airsim
 from geometry_msgs.msg import PoseStamped
 from pure_pursuit import *
 from std_msgs.msg import Float64
@@ -30,15 +29,6 @@ class Navigation:
 
         self.navigator = PurePursuit(look_ahead_distance, look_forward_gain, self.path)
         self.car_state = CarState(wheel_base)
-
-        self.client = airsim.CarClient()
-        self.client.confirmConnection()
-
-        path_print = []
-        for x, y, _ in path:
-            path_print.append(airsim.Vector3r(x, y, 0))
-
-        self.client.simPlotPoints(path_print, color_rgba=[1.0, 0.0, 0.0, 1.0], size = 5, is_persistent=True)
 
     def listener(self):
         rospy.init_node('navigation', anonymous=True)
