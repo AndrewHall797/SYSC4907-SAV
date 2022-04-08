@@ -15,7 +15,7 @@ OLR = 'one_lane_right'
 NL = 'no lanes'
 CLASSIFICATION_MAP = {LaneBoundStatus.TWO_BOUNDS: TL, LaneBoundStatus.ONE_BOUND_LEFT: OLL,
                       LaneBoundStatus.ONE_BOUND_RIGHT: OLR, LaneBoundStatus.NO_BOUNDS: NL}
-CLASSIFICATION_MAP_ugh = {'TL': TL, 'OLL': OLL,'OLR': OLR, 'NL': NL}
+CLASSIFICATION_MAP_ugh = {'TL': TL, 'OLL': OLL, 'OLR': OLR, 'NL': NL}
 
 
 # Returns metrics on the iou of the images
@@ -39,9 +39,6 @@ def measure_detect():
         iou_values_hough_segmented.append((index, iou_hough[2]))
         index = index + 1
 
-    print(metrics.classification_report(correct_classifications, classifications_gradient, digits=3))
-
-
     with open("metrics.txt", "w") as file:
         file.write(f"Values after hough with gradient {iou_values_hough_gradient}\n")
         file.write(f"Values after hough with hls {iou_values_hough_hls}\n")
@@ -50,6 +47,7 @@ def measure_detect():
         file.write(f"average accuracy of gradient is {np.average([i[1] for i in iou_values_hough_gradient])}\n")
         file.write(f"average accuracy of hls is {np.average([i[1] for i in iou_values_hough_hls])}\n")
         file.write(f"average accuracy of segmented is {np.average([i[1] for i in iou_values_hough_segmented])}\n")
+        file.write(metrics.classification_report(correct_classifications, classifications_gradient, digits=3))
 
 
 # Gets the images defined in the json file from the test images file
@@ -98,7 +96,9 @@ def get_annotation(annotated_image: np.ndarray) -> np.ndarray:
 
 # Gets the IOU of the lines
 def get_iou(original_image: np.ndarray, segmented_image: np.ndarray, annotated_image: np.ndarray) -> Tuple[Tuple[
-    float, float, float], Tuple[LaneBoundStatus, LaneBoundStatus, LaneBoundStatus]]:
+                                                                                                               float, float, float],
+                                                                                                           Tuple[
+                                                                                                               LaneBoundStatus, LaneBoundStatus, LaneBoundStatus]]:
     # Detect the lanes
     gradient_lane_lines, hls_lane_lines, segmented_lane_lines, _ = lane_detect(original_image, segmented_image)
 
@@ -131,6 +131,10 @@ def get_iou(original_image: np.ndarray, segmented_image: np.ndarray, annotated_i
     return (gradient_results, hls_results, segmented_results), (gradient_class, hls_class, segmentation_class)
 
 
+####################################################################
+# The two methods below needed to be copied in due to pathing issues
+####################################################################
+
 # Draw lines on the image
 def draw_lines_image(image: np.ndarray, lines):
     if lines:
@@ -161,7 +165,7 @@ def lane_type(lines) -> LaneBoundStatus:
             return LaneBoundStatus.TWO_BOUNDS
         elif len(lines) == 1:
             x1, y1, x2, y2 = lines[0]
-            slope = (y2-y1) / (x2-x1)
+            slope = (y2 - y1) / (x2 - x1)
 
             if slope < 0:
                 return LaneBoundStatus.ONE_BOUND_LEFT
