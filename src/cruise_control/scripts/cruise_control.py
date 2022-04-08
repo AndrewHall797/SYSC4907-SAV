@@ -55,7 +55,7 @@ class CruiseControl:
         print("Obtained path data")
 
     def handle_new_target_speed(self, new_target_speed: Float64):
-        self.pidController.update_target_speed(new_target_speed)
+        self.pidController.update_target_speed(new_target_speed.data)
 
     def handle_speed_data(self, speed: Float64):
         self.currentSpeed = speed.data
