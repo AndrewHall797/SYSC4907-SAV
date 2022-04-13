@@ -19,9 +19,6 @@ class CruiseControl:
         self.currentSpeed = 0.0
         self.lastTime = time.time()
 
-        # Used for automated testing
-        self.outputSpeedFile = open("speed_output.txt", "w")
-
     def listener(self):
         rospy.init_node("cruise_control", anonymous=True)
         # Define Path data structure
@@ -58,8 +55,6 @@ class CruiseControl:
         throttle_value = self.pidController.update_pid_output(self.currentSpeed, delta_time)
         self.throttlePub.publish(throttle_value)
         rospy.loginfo("Setting throttle: {}".format(throttle_value))
-
-        self.outputSpeedFile.write("{},{}\n".format(delta_time, self.currentSpeed))
 
 
 if __name__ == "__main__":

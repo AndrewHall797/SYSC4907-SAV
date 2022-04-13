@@ -13,10 +13,6 @@ class ClusterDetection:
         self.min_num_points = int(param_file.readline())
         self.epsilon = float(param_file.readline())
 
-        self.running_tests = False  # Set to true if running tests
-        if self.running_tests:
-            self.box_output_file = open(os.path.abspath(os.path.dirname(__file__)) + "/detected_boxes.txt", "w")
-
         host_ip = rospy.get_param('/host_ip')
 
         self.client = airsim.CarClient(ip=host_ip)
@@ -61,9 +57,6 @@ class ClusterDetection:
         for cluster in cluster_dic.values():
             self.find_aabb(cluster, bounding_boxes)
 
-        if self.running_tests:
-            self.write_bounding_boxes_to_file(bounding_boxes)
-
         car_pos = self.client.simGetGroundTruthKinematics("").position
         bounding_boxes.append(car_pos.x_val.real)
         bounding_boxes.append(car_pos.y_val.real)
@@ -104,29 +97,3 @@ class ClusterDetection:
         result.append(max_x)
         result.append(max_y)
         result.append(max_z)
-
-    # Writes the passed in boxes to a file used by tests
-    def write_bounding_boxes_to_file(self, boxes: [float]):
-
-        car_pos = self.client.simGetGroundTruthKinematics("").position
-
-        self.box_output_file.write("{},{},{},".format(car_pos.x_val.real, car_pos.y_val.real, car_pos.z_val.real))
-
-        component_index = 0
-
-        for box in boxes:
-            if component_index == 0:
-                box += car_pos.x_val.real
-            elif component_index == 1:
-                box += car_pos.y_val.real
-            else:
-                box += car_pos.z_val.real
-
-            component_index += 1
-            if component_index % 3 == 0:
-                component_index = 0
-
-            self.box_output_file.write("{},".format(box))
-
-        self.box_output_file.write("\n")
-        self.box_output_file.flush()
